@@ -95,6 +95,11 @@ void UTILS_render_tasks(app_context_s* a_ctx){
   }
 }
 void UTILS_render_modal(app_context_s *a_ctx){
-  box(a_ctx->d_w->win, 0, 0);
-  UI_WINDOW_center_addstr(a_ctx->d_w, "TEST");
+  UI_WINDOW_s* win = a_ctx->d_w;
+  box(win->win, 0, 0);
+  int w = win->w - 4;
+  int s_x = (win->w - w)/2;
+  char* title = "INSERT/MODIFY TASK";
+  mvwaddstr(win->win, 1, (win->w - strlen(title))/2, title);
+  UI_WINDOW_labeled_rectangle_draw(win, 2, s_x, w, "Task");
 }
