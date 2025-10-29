@@ -1,12 +1,12 @@
 #include "tasks.h"
 
-Task* Tasks_make(){
-  Task* ts = calloc(TASKS_MAX, sizeof(Task)); 
+tasks_sl TASKS_make(){
+  tasks_sl ts = calloc(TASKS_MAX, sizeof(tasks_sl)); 
   ts[0].name = NULL;
   return ts;
 }
 
-int Tasks_add(Task* ts, int id, char* name, time_t start, double duration){
+int TASKS_add(tasks_sl ts, int id, char* name, time_t start, double duration){
   for(int i=0; i<TASKS_MAX-1; i++){ //Check only for until last - 1 element, becase if last is already filled, cannot add new tasks
     if(ts[i].name == NULL){
       ts[i+1].name = NULL; //Mark next empty Task
@@ -20,7 +20,7 @@ int Tasks_add(Task* ts, int id, char* name, time_t start, double duration){
   }
   return 0;
 }
-int Tasks_len(Task* ts){
+int TASKS_len(tasks_sl ts){
   for(int i=0; i<TASKS_MAX; i++){
     if(ts[i].name == NULL){
       return i;

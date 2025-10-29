@@ -1,5 +1,5 @@
-CC = clang
-CFLAGS = -Wall -Iinclude 
+CC = gcc
+CFLAGS = -Wall -Iinclude -g 
 LDLIBS = -lncurses
 
 SRC_DIR := src

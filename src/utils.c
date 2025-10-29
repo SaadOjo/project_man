@@ -1,9 +1,9 @@
 #include "utils.h"
 #include "ui.h"
 
-void UTILS_navigate(App_context* a, int ch){
+void UTILS_navigate(app_context_s* a, int ch){
   int max_rows = a->m_w->h;
-  int ts_len = Tasks_len(a->ts);
+  int ts_len = TASKS_len(a->ts);
   if(ts_len < max_rows){
     max_rows = ts_len;
   }
@@ -17,5 +17,8 @@ void UTILS_navigate(App_context* a, int ch){
   }
   UI_render_tasks(a);
   UI_wrefresh(a->m_w); 
+
+  UI_render_modal(a);
+  UI_wrefresh(a->d_w);
 }
 
