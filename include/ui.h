@@ -2,19 +2,18 @@
 #include <ncurses.h>
 #include "structs.h"
 
-typedef struct UI_window_s{
+typedef struct UI_WINDOW_s{
   WINDOW *win;
   int w;
   int h;
   int s_x;
   int s_y;
-} UI_window_s;
+} UI_WINDOW_s;
 
-UI_window_s UI_Window_make();
-void UI_Window_del(UI_window_s* w);
-void UI_init();
-void UI_create_window(UI_window_s* w);
-void UI_waddstr_center(UI_window_s* w, char* m);
-void UI_wrefresh(UI_window_s* w); 
-void UI_render_tasks(app_context_s* a_ctx);
-void UI_render_modal(app_context_s* a_ctx);
+UI_WINDOW_s UI_WINDOW_make();
+void UI_WINDOW_alloc(UI_WINDOW_s* w);
+void UI_WINDOW_del(UI_WINDOW_s* w);
+
+void UI_WINDOW_center_addstr(UI_WINDOW_s* w, char* m);
+void UI_WINDOW_refresh(UI_WINDOW_s* w); 
+
