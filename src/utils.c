@@ -97,9 +97,22 @@ void UTILS_render_tasks(app_context_s* a_ctx){
 void UTILS_render_modal(app_context_s *a_ctx){
   UI_WINDOW_s* win = a_ctx->d_w;
   box(win->win, 0, 0);
-  int w = win->w - 4;
-  int s_x = (win->w - w)/2;
+
   char* title = "INSERT/MODIFY TASK";
   mvwaddstr(win->win, 1, (win->w - strlen(title))/2, title);
+  
+  int w, s_x;
+  w = win->w - 4;
+  s_x = (win->w - w)/2;
   UI_WINDOW_labeled_rectangle_draw(win, 2, s_x, w, "Task");
+  
+  int tw = w;
+  int ts_x = s_x;
+
+  w = win->w/2 - 2;
+  UI_WINDOW_labeled_rectangle_draw(win, 5, ts_x, w, "Duration");
+
+  w = win->w/2 - 2;
+  s_x = tw + ts_x - w; 
+  UI_WINDOW_labeled_rectangle_draw(win, 5, s_x, w, "Start");
 }
