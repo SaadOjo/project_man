@@ -1,4 +1,4 @@
-#include "ui.h"
+#include "ui_window.h"
 #include "structs.h"
 
 UI_WINDOW_s UI_WINDOW_make(){
@@ -17,7 +17,7 @@ void UI_WINDOW_del(UI_WINDOW_s* w){
   }
   delwin(w->win);
 }
-
+// Arguably if the window is already allocated we should return error. Let's think about it. 
 void UI_WINDOW_alloc(UI_WINDOW_s* w){
   if(w->win == NULL){
     w->win = newwin(w->h, w->w, w->s_y, w->s_x);
@@ -33,7 +33,7 @@ void UI_WINDOW_refresh(UI_WINDOW_s* w){
   wrefresh(w->win);
 }
 
-void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int width, char* name){
+void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int width, char* name, attr_t attr){
   int height = 3;
   mvwhline(w->win, s_y, s_x + 1, ACS_HLINE, width - 2); 
   mvwhline(w->win, s_y + height - 1, s_x + 1, ACS_HLINE, width - 2); 
@@ -46,5 +46,7 @@ void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int widt
   mvwaddch(w->win, s_y + height - 1, s_x, ACS_LLCORNER);
   mvwaddch(w->win, s_y + height - 1, s_x + width - 1, ACS_LRCORNER);
 
+  wattron(w->win, attr);
   mvwaddstr(w->win, s_y, s_x + 2, name);
+  wattroff(w->win, attr);
 }

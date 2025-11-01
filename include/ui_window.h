@@ -16,5 +16,5 @@ void UI_WINDOW_del(UI_WINDOW_s* w);
 
 void UI_WINDOW_center_addstr(UI_WINDOW_s* w, char* m);
 void UI_WINDOW_refresh(UI_WINDOW_s* w); 
-void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int width, char* name);
+void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int width, char* name, attr_t attr);
 

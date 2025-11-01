@@ -1,5 +1,6 @@
 #include "utils.h"
-#include "ui.h"
+#include "dialog.h"
+#include "ui_window.h"
 
 void UTILS_ui_init(){
   initscr();
@@ -20,15 +21,15 @@ void UTILS_ui_init(){
 app_context_s UTILS_app_context_make(){
   app_context_s a_ctx;
   a_ctx.m_w = NULL;
-  a_ctx.d_w = NULL;
+  a_ctx.d = NULL;
   a_ctx.ts = NULL;
-  a_ctx.s = MODAL_STATE_OFF;
   a_ctx.hlgt = 0;
   return a_ctx;
 }
 void UTILS_navigate(app_context_s* a, int ch){
   int max_rows = a->m_w->h;
   int ts_len = TASKS_len(a->ts);
+  DIALOG_s* d = a->d;
   if(ts_len < max_rows){
     max_rows = ts_len;
   }
@@ -40,21 +41,18 @@ void UTILS_navigate(app_context_s* a, int ch){
       a->hlgt = (a->hlgt+=(max_rows - 1))%max_rows;
       break;
     case '\n':
-      a->s = MODAL_STATE_ON;
+      // Add check if table is empty, in that case present an error message
+      d->type = DIALOG_TYPE_MODIFY;
+      DIALOG_navigate(d, a);
       break;
-    case 27:
-      a->s = MODAL_STATE_OFF;
-      wclear(a->d_w->win); //TODO: Integrate with UI_WINDOW library
-      UI_WINDOW_refresh(a->d_w);
+    case 'a': // Add
+      d->type = DIALOG_TYPE_ADD;
+      DIALOG_navigate(d, a);
       break;
   }
+  
   UTILS_render_tasks(a);
   UI_WINDOW_refresh(a->m_w); 
-  modal_state_e s = a->s;
-  if(s == MODAL_STATE_ON){
-    UTILS_render_modal(a);
-    UI_WINDOW_refresh(a->d_w);
-  }
 }
 
 void UTILS_render_tasks(app_context_s* a_ctx){
@@ -93,26 +91,4 @@ void UTILS_render_tasks(app_context_s* a_ctx){
               col_w[3], "12-MAY-25");
     wattroff(w->win, attr);
   }
-}
-void UTILS_render_modal(app_context_s *a_ctx){
-  UI_WINDOW_s* win = a_ctx->d_w;
-  box(win->win, 0, 0);
-
-  char* title = "INSERT/MODIFY TASK";
-  mvwaddstr(win->win, 1, (win->w - strlen(title))/2, title);
-  
-  int w, s_x;
-  w = win->w - 4;
-  s_x = (win->w - w)/2;
-  UI_WINDOW_labeled_rectangle_draw(win, 2, s_x, w, "Task");
-  
-  int tw = w;
-  int ts_x = s_x;
-
-  w = win->w/2 - 2;
-  UI_WINDOW_labeled_rectangle_draw(win, 5, ts_x, w, "Duration");
-
-  w = win->w/2 - 2;
-  s_x = tw + ts_x - w; 
-  UI_WINDOW_labeled_rectangle_draw(win, 5, s_x, w, "Start");
 }
