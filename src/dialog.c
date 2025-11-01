@@ -1,5 +1,8 @@
 #include "dialog.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
+#include <time.h>
 
 DIALOG_s  DIALOG_make(){
   DIALOG_s s;
@@ -99,25 +102,32 @@ void DIALOG_render(DIALOG_s* d){
   attr_t highlight_attr = A_BOLD | A_REVERSE;
   attr_t attr;
 
+  EDITABLE_TEXT_s* et;
+
+  et = d->contents->task;
   attr = d->active_textbox == DIALOG_TEXTBOX_TASK ? highlight_attr : A_NORMAL;
-  UI_WINDOW_labeled_rectangle_draw(win, 2, s_x, w, "Task", attr);
+  UI_WINDOW_labeled_rectangle_draw(win, 2, s_x, w, "Task", attr, et);
   
   int tw = w;
   int ts_x = s_x;
 
   w = win->w/2 - 2;
+  et = d->contents->duration;
   attr = d->active_textbox == DIALOG_TEXTBOX_DURATION ? highlight_attr : A_NORMAL;
-  UI_WINDOW_labeled_rectangle_draw(win, 5, ts_x, w, "Duration", attr);
+  UI_WINDOW_labeled_rectangle_draw(win, 5, ts_x, w, "Duration", attr, et);
 
   s_x = tw + ts_x - w; 
+  et = d->contents->start;
   attr = d->active_textbox == DIALOG_TEXTBOX_START ? highlight_attr : A_NORMAL;
-  UI_WINDOW_labeled_rectangle_draw(win, 5, s_x, w, "Start", attr);
+  UI_WINDOW_labeled_rectangle_draw(win, 5, s_x, w, "Start", attr, et);
 
+  et = d->contents->end;
   attr = d->active_textbox == DIALOG_TEXTBOX_END ? highlight_attr : A_NORMAL;
-  UI_WINDOW_labeled_rectangle_draw(win, 8, ts_x, w, "End", attr);
+  UI_WINDOW_labeled_rectangle_draw(win, 8, ts_x, w, "End", attr, et);
 
+  et = d->contents->depends;
   attr = d->active_textbox == DIALOG_TEXTBOX_DEPENDS ? highlight_attr : A_NORMAL;
-  UI_WINDOW_labeled_rectangle_draw(win, 8, s_x, w, "Depends", attr);
+  UI_WINDOW_labeled_rectangle_draw(win, 8, s_x, w, "Depends", attr, et);
 }
 void DIALOG_navigate(DIALOG_s *d, app_context_s* a_ctx){
 // capture text steam
@@ -125,7 +135,8 @@ void DIALOG_navigate(DIALOG_s *d, app_context_s* a_ctx){
 // Clear dialog before exiting
   UI_WINDOW_s* win = d->win;
   WINDOW* n_win = win->win;
- 
+
+  _DIALOG_dialog_content_set(d, &a_ctx->ts[a_ctx->hlgt]);
   DIALOG_render(d);
   UI_WINDOW_refresh(win);
 
@@ -135,7 +146,7 @@ void DIALOG_navigate(DIALOG_s *d, app_context_s* a_ctx){
       case 'j':
         break;
       case '\t':
-        _DIALOG_cycle_active_textbox(d);
+        _DIALOG_active_textbox_cycle(d);
         break;
       case '\n': // Should go into "NORMAL" mode. 
         break;
@@ -150,7 +161,20 @@ void DIALOG_navigate(DIALOG_s *d, app_context_s* a_ctx){
   UI_WINDOW_refresh(win);
 }
 
-void _DIALOG_cycle_active_textbox(DIALOG_s *d){
+void _DIALOG_active_textbox_cycle(DIALOG_s *d){
   d->active_textbox++;
   d->active_textbox%=5;
+}
+void _DIALOG_dialog_content_set(DIALOG_s* d, task_s* t){
+  DIALOG_contents_s* cnt = d->contents;
+  char buff[1024];
+  strcpy(cnt->task->text, t->name);
+ 
+  int dur = (int)t->duration/86400.0;
+  sprintf(buff, "%d", dur);
+  strcpy(cnt->duration->text, buff);
+
+  struct tm* ts = localtime(&t->start);
+  strftime(buff, sizeof(buff), "%d/%m/%Y", ts);
+  strcpy(cnt->start->text, buff);
 }

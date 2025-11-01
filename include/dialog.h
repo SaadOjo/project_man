@@ -1,5 +1,6 @@
 #include "editable_text.h"
 #include "structs.h"
+#include "tasks.h"
 #include "ui_window.h"
 
 typedef enum{
@@ -37,4 +38,5 @@ void      DIALOG_del(DIALOG_s* d);
 void      DIALOG_render(DIALOG_s* d);
 void      DIALOG_navigate(DIALOG_s *d, app_context_s* a_ctx);
 // Private functions
-void      _DIALOG_cycle_active_textbox(DIALOG_s *d);
+void      _DIALOG_active_textbox_cycle(DIALOG_s *d);
+void      _DIALOG_dialog_content_set(DIALOG_s* d, task_s* t);

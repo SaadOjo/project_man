@@ -33,7 +33,7 @@ void UI_WINDOW_refresh(UI_WINDOW_s* w){
   wrefresh(w->win);
 }
 
-void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int width, char* name, attr_t attr){
+void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int width, char* name, attr_t attr, EDITABLE_TEXT_s* et){
   int height = 3;
   mvwhline(w->win, s_y, s_x + 1, ACS_HLINE, width - 2); 
   mvwhline(w->win, s_y + height - 1, s_x + 1, ACS_HLINE, width - 2); 
@@ -49,4 +49,6 @@ void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int widt
   wattron(w->win, attr);
   mvwaddstr(w->win, s_y, s_x + 2, name);
   wattroff(w->win, attr);
+
+  mvwaddstr(w->win, s_y + 1, s_x + 1, et->text);
 }

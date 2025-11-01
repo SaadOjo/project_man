@@ -12,8 +12,8 @@ EDITABLE_TEXT_s EDITABLE_TEXT_make(){
 
 void EDITABLE_TEXT_alloc(EDITABLE_TEXT_s* et){
   et->text = malloc(sizeof(char)*EDITABLE_TEXT_MAX_LEN);  
-  et->text[0] = '\n';
+  et->text[0] = '\0';
 }
 void EDITABLE_TEXT_del(EDITABLE_TEXT_s* et){
-
+  free(et->text);
 }
