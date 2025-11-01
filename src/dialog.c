@@ -1,9 +1,11 @@
 #include "dialog.h"
+#include <stdlib.h>
 
 DIALOG_s  DIALOG_make(){
   DIALOG_s s;
   s.win = NULL;
-  s.active_textbox = DIALOG_TEXTBOX_START; 
+  s.contents = NULL;
+  s.active_textbox = DIALOG_TEXTBOX_TASK; 
   s.type = DIALOG_TYPE_NULL; 
   return s;
 }
@@ -20,12 +22,55 @@ void DIALOG_alloc(DIALOG_s* d){
   UI_WINDOW_s* m_w = malloc(sizeof(UI_WINDOW_s));
   memcpy(m_w, &w, sizeof(UI_WINDOW_s));
   d->win = m_w;
+  
+  DIALOG_contents_s* cnt = malloc(sizeof(DIALOG_contents_s));
 
+  EDITABLE_TEXT_s et;
+  EDITABLE_TEXT_s* m_et;
+
+  et = EDITABLE_TEXT_make();
+  EDITABLE_TEXT_alloc(&et);
+  m_et = malloc(sizeof(EDITABLE_TEXT_s));
+  memcpy(m_et, &et, sizeof(EDITABLE_TEXT_s));
+  cnt->task = m_et;
+
+  et = EDITABLE_TEXT_make();
+  EDITABLE_TEXT_alloc(&et);
+  m_et = malloc(sizeof(EDITABLE_TEXT_s));
+  memcpy(m_et, &et, sizeof(EDITABLE_TEXT_s));
+  cnt->duration = m_et;
+
+  et = EDITABLE_TEXT_make();
+  EDITABLE_TEXT_alloc(&et);
+  m_et = malloc(sizeof(EDITABLE_TEXT_s));
+  memcpy(m_et, &et, sizeof(EDITABLE_TEXT_s));
+  cnt->start = m_et;
+
+  et = EDITABLE_TEXT_make();
+  EDITABLE_TEXT_alloc(&et);
+  m_et = malloc(sizeof(EDITABLE_TEXT_s));
+  memcpy(m_et, &et, sizeof(EDITABLE_TEXT_s));
+  cnt->end = m_et;
+
+  et = EDITABLE_TEXT_make();
+  EDITABLE_TEXT_alloc(&et);
+  m_et = malloc(sizeof(EDITABLE_TEXT_s));
+  memcpy(m_et, &et, sizeof(EDITABLE_TEXT_s));
+  cnt->depends = m_et;
+  
+  d->contents = cnt;  
 }
 
 void DIALOG_del(DIALOG_s* d){
   UI_WINDOW_del(d->win);
   free(d->win);
+  DIALOG_contents_s* cnt = d->contents;
+  EDITABLE_TEXT_del(cnt->task);
+  EDITABLE_TEXT_del(cnt->duration);
+  EDITABLE_TEXT_del(cnt->start);
+  EDITABLE_TEXT_del(cnt->end);
+  EDITABLE_TEXT_del(cnt->depends);
+  free(cnt);
 }
 
 void DIALOG_render(DIALOG_s* d){
@@ -51,26 +96,27 @@ void DIALOG_render(DIALOG_s* d){
   w = win->w - 4;
   s_x = (win->w - w)/2;
   
+  attr_t highlight_attr = A_BOLD | A_REVERSE;
   attr_t attr;
 
-  attr = d->active_textbox == DIALOG_TEXTBOX_TASK ? A_BOLD : A_NORMAL;
+  attr = d->active_textbox == DIALOG_TEXTBOX_TASK ? highlight_attr : A_NORMAL;
   UI_WINDOW_labeled_rectangle_draw(win, 2, s_x, w, "Task", attr);
   
   int tw = w;
   int ts_x = s_x;
 
   w = win->w/2 - 2;
-  attr = d->active_textbox == DIALOG_TEXTBOX_DURATION ? A_BOLD : A_NORMAL;
+  attr = d->active_textbox == DIALOG_TEXTBOX_DURATION ? highlight_attr : A_NORMAL;
   UI_WINDOW_labeled_rectangle_draw(win, 5, ts_x, w, "Duration", attr);
 
   s_x = tw + ts_x - w; 
-  attr = d->active_textbox == DIALOG_TEXTBOX_START ? A_BOLD : A_NORMAL;
+  attr = d->active_textbox == DIALOG_TEXTBOX_START ? highlight_attr : A_NORMAL;
   UI_WINDOW_labeled_rectangle_draw(win, 5, s_x, w, "Start", attr);
 
-  attr = d->active_textbox == DIALOG_TEXTBOX_END ? A_BOLD : A_NORMAL;
+  attr = d->active_textbox == DIALOG_TEXTBOX_END ? highlight_attr : A_NORMAL;
   UI_WINDOW_labeled_rectangle_draw(win, 8, ts_x, w, "End", attr);
 
-  attr = d->active_textbox == DIALOG_TEXTBOX_DEPENDS ? A_BOLD : A_NORMAL;
+  attr = d->active_textbox == DIALOG_TEXTBOX_DEPENDS ? highlight_attr : A_NORMAL;
   UI_WINDOW_labeled_rectangle_draw(win, 8, s_x, w, "Depends", attr);
 }
 void DIALOG_navigate(DIALOG_s *d, app_context_s* a_ctx){
@@ -91,7 +137,11 @@ void DIALOG_navigate(DIALOG_s *d, app_context_s* a_ctx){
       case '\t':
         _DIALOG_cycle_active_textbox(d);
         break;
+      case '\n': // Should go into "NORMAL" mode. 
+        break;
     }
+    //TODO: Add / update the task
+    // Take information from buffer and do something about it
     DIALOG_render(d);
     UI_WINDOW_refresh(win);
   }

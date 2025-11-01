@@ -1,3 +1,4 @@
+#include "editable_text.h"
 #include "structs.h"
 #include "ui_window.h"
 
@@ -15,8 +16,17 @@ typedef enum{
   DIALOG_TEXTBOX_DEPENDS
 } DIALOG_textbox_e;
 
+typedef struct DIALOG_contents_s{
+  EDITABLE_TEXT_s* task;
+  EDITABLE_TEXT_s* duration;
+  EDITABLE_TEXT_s* start;
+  EDITABLE_TEXT_s* end;
+  EDITABLE_TEXT_s* depends;
+} DIALOG_contents_s;
+
 typedef struct DIALOG_s {
   UI_WINDOW_s* win;
+  DIALOG_contents_s* contents;
   DIALOG_textbox_e active_textbox;  
   DIALOG_type_e type;
 } DIALOG_s;
