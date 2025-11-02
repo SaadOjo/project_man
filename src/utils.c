@@ -43,11 +43,11 @@ void UTILS_navigate(app_context_s* a, int ch){
     case '\n':
       // Add check if table is empty, in that case present an error message
       d->type = DIALOG_TYPE_MODIFY;
-      DIALOG_navigate(d, a);
+      DIALOG_show(d, a);
       break;
     case 'a': // Add
       d->type = DIALOG_TYPE_ADD;
-      DIALOG_navigate(d, a);
+      DIALOG_show(d, a);
       break;
   }
   

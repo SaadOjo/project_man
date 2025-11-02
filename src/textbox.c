@@ -4,6 +4,7 @@
 
 TEXTBOX_s TEXTBOX_make(){
   TEXTBOX_s tb;
+  tb.state = TEXTBOX_STATE_DEFAULT;
   tb.width = 10;
   tb.height = 3;
   tb.x = 0;
@@ -36,10 +37,10 @@ void TEXTBOX_draw(TEXTBOX_s* tb, UI_WINDOW_s* win){
   switch(tb->state){
     case TEXTBOX_STATE_DEFAULT:
       break;
-    case TEXTBOX_STATE_NORMAL:
+    case TEXTBOX_STATE_HIGHLIGHT:
       label_attr = TEXTBOX_LABEL_FOCUS_ATTR;
       break;
-    case TEXTBOX_STATE_INSERT:
+    case TEXTBOX_STATE_ENTER:
       border_attr = TEXTBOX_BORDER_FOCUS_ATTR;
       break;
   }
