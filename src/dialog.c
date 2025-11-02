@@ -75,6 +75,13 @@ void DIALOG_alloc(DIALOG_s* d){
   strcpy(tb.label, "Depends");
   d->depends_tb = malloc(sizeof(TEXTBOX_s));
   memcpy(d->depends_tb, &tb, sizeof(TEXTBOX_s));
+
+  d->tb_pl = malloc(sizeof(*d->tb_pl)*5);
+  d->tb_pl[0] = d->task_tb;
+  d->tb_pl[1] = d->duration_tb;
+  d->tb_pl[2] = d->start_tb;
+  d->tb_pl[3] = d->end_tb;
+  d->tb_pl[4] = d->depends_tb;
 }
 
 void DIALOG_del(DIALOG_s* d){
@@ -95,6 +102,8 @@ void DIALOG_del(DIALOG_s* d){
 
   TEXTBOX_del(d->depends_tb);
   free(d->depends_tb);
+
+  free(d->tb_pl);
 }
 
 void DIALOG_draw(DIALOG_s* d){
@@ -155,7 +164,16 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
 }
 
 void _DIALOG_active_textbox_cycle(DIALOG_s *d){
+  d->active_tb_idx++;
+  d->active_tb_idx%=5;
+
+  TEXTBOX_s* tb;
+  for(int i=0; i<5; i++){
+    tb = d->tb_pl[i];
+    tb ->state = i==d->active_tb_idx?TEXTBOX_STATE_HIGHLIGHT:TEXTBOX_STATE_DEFAULT;
+  }
 }
+
 void _DIALOG_content_set(DIALOG_s* d, task_s* t){
   char buff[1024];
   strcpy(d->task_tb->text, t->name);

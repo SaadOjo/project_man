@@ -32,23 +32,3 @@ void UI_WINDOW_center_addstr(UI_WINDOW_s* w, char* m){
 void UI_WINDOW_refresh(UI_WINDOW_s* w){
   wrefresh(w->win);
 }
-
-void UI_WINDOW_labeled_rectangle_draw(UI_WINDOW_s* w, int s_y, int s_x, int width, char* name, attr_t attr, EDITABLE_TEXT_s* et){
-  int height = 3;
-  mvwhline(w->win, s_y, s_x + 1, ACS_HLINE, width - 2); 
-  mvwhline(w->win, s_y + height - 1, s_x + 1, ACS_HLINE, width - 2); 
-
-  mvwvline(w->win, s_y + 1, s_x, ACS_VLINE, height - 2); 
-  mvwvline(w->win, s_y + 1, s_x + width - 1, ACS_VLINE, height - 2); 
-
-  mvwaddch(w->win, s_y, s_x, ACS_ULCORNER);
-  mvwaddch(w->win, s_y, s_x + width - 1, ACS_URCORNER);
-  mvwaddch(w->win, s_y + height - 1, s_x, ACS_LLCORNER);
-  mvwaddch(w->win, s_y + height - 1, s_x + width - 1, ACS_LRCORNER);
-
-  wattron(w->win, attr);
-  mvwaddstr(w->win, s_y, s_x + 2, name);
-  wattroff(w->win, attr);
-
-  mvwaddstr(w->win, s_y + 1, s_x + 1, et->text);
-}
