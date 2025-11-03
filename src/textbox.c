@@ -42,6 +42,7 @@ void TEXTBOX_draw(TEXTBOX_s* tb, UI_WINDOW_s* win){
       break;
     case TEXTBOX_STATE_ENTER:
       border_attr = TEXTBOX_BORDER_FOCUS_ATTR;
+      label_attr = A_UNDERLINE;
       break;
   }
 

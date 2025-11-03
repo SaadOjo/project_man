@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "dialog.h"
+#include "vim_motions.h"
 
 DIALOG_s  DIALOG_make(){
   DIALOG_s s;
@@ -141,7 +142,16 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
   WINDOW* n_win = win->win;
 
   d->active_tb_idx = 0;
-  _DIALOG_content_set(d, &a_ctx->ts[a_ctx->hlgt]);
+  switch(d->type){
+    case DIALOG_TYPE_NULL:
+      break; // Unexpected case
+    case DIALOG_TYPE_ADD:
+      _DIALOG_content_clear(d);
+      break;
+    case DIALOG_TYPE_MODIFY:
+    _DIALOG_content_set(d, &a_ctx->ts[a_ctx->hlgt]);
+    break;
+  }
   DIALOG_draw(d);
   UI_WINDOW_refresh(win);
 
@@ -153,7 +163,7 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
       case '\t':
         _DIALOG_active_textbox_cycle(d);
         break;
-      case '\n': // Should go into "NORMAL" mode. 
+      case '\n': // Should go into "ENTER" mode. 
         _DIALOG_textbox_enter(d);
         break;
     }
@@ -186,10 +196,21 @@ void _DIALOG_content_set(DIALOG_s* d, task_s* t){
   strcpy(d->start_tb->text, buff);
 }
 
+void _DIALOG_content_clear(DIALOG_s* d){
+  d->task_tb->text[0] = '\0';
+  d->duration_tb->text[0] = '\0';
+  d->start_tb->text[0] = '\0';
+  d->end_tb->text[0] = '\0';
+  d->duration_tb->text[0] = '\0';
+}
+
 void _DIALOG_active_textbox_attr_update(DIALOG_s *d){
   TEXTBOX_s* tb;
   for(int i=0; i<5; i++){
     tb = d->tb_pl[i];
+    if(tb->state == TEXTBOX_STATE_ENTER){
+      continue;
+    }
     tb->state = i==d->active_tb_idx?TEXTBOX_STATE_HIGHLIGHT:TEXTBOX_STATE_DEFAULT;
   }
 }
@@ -197,14 +218,53 @@ void _DIALOG_active_textbox_attr_update(DIALOG_s *d){
 void _DIALOG_textbox_enter(DIALOG_s* d){
   const int NORMAL_MODE = 1;
   const int INSERT_MODE = 2; 
+  int mode = NORMAL_MODE;
+  int cur_idx = 0;
+  bool running = true;
   int ch; 
-  d->tb_pl[d->active_tb_idx]->state = TEXTBOX_STATE_ENTER;
+  TEXTBOX_s* active_tb = d->tb_pl[d->active_tb_idx];
+  active_tb->state = TEXTBOX_STATE_ENTER;
+  curs_set(1);
   DIALOG_draw(d);
+  wmove(d->win->win, active_tb->y+1, active_tb->x+1);
   UI_WINDOW_refresh(d->win);
-  while((ch = wgetch(d->win->win) != 27)){
 
+  //Normal mode init
+
+  while(running){
+    ch = wgetch(d->win->win);
+    if(mode == NORMAL_MODE){
+      switch(ch){
+        case 27:
+          running = false;
+          break;
+        case 'i':
+          mode = INSERT_MODE;
+          printf("\033[6 q");
+          fflush(stdout);
+          break;
+        case 'l':
+          cur_idx = vim_l(active_tb->text, cur_idx);
+          break;
+        case 'h':
+          cur_idx = vim_h(active_tb->text, cur_idx);
+          break;
+      }
+    } else if(mode == INSERT_MODE){
+      switch(ch){
+        case 27:
+          mode = NORMAL_MODE;
+          printf("\033[0 q");
+          fflush(stdout);
+          break;
+      }
+    }
+    DIALOG_draw(d);
+    wmove(d->win->win, active_tb->y+1, active_tb->x+1+cur_idx);
+    UI_WINDOW_refresh(d->win);
   } 
   d->tb_pl[d->active_tb_idx]->state = TEXTBOX_STATE_HIGHLIGHT;
+  curs_set(0);
   DIALOG_draw(d);
   UI_WINDOW_refresh(d->win);
 }
