@@ -257,6 +257,12 @@ void _DIALOG_textbox_enter(DIALOG_s* d){
           printf("\033[0 q");
           fflush(stdout);
           break;
+        default:
+          strcpy(active_tb->text+cur_idx+1, active_tb->text+cur_idx);
+          //strcpy not safe for overlapping region. Use memmove instead.
+          active_tb->text[cur_idx] = ch;
+          cur_idx++;
+          break;
       }
     }
     DIALOG_draw(d);
