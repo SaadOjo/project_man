@@ -17,7 +17,8 @@ DIALOG_s  DIALOG_make(){
   s.tb_pl = NULL; 
   s.active_tb_idx = 0;
 
-  s.type = DIALOG_TYPE_NULL; 
+  s.type = DIALOG_TYPE_NULL;
+
   return s;
 }
 
@@ -125,6 +126,7 @@ void DIALOG_draw(DIALOG_s* d){
   }
   mvwaddstr(win->win, 1, (win->w - strlen(title))/2, title);
   
+  _DIALOG_active_textbox_attr_update(d);
   TEXTBOX_draw(d->task_tb, d->win);  
   TEXTBOX_draw(d->duration_tb, d->win);  
   TEXTBOX_draw(d->start_tb, d->win);  
@@ -138,6 +140,7 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
   UI_WINDOW_s* win = d->win;
   WINDOW* n_win = win->win;
 
+  d->active_tb_idx = 0;
   _DIALOG_content_set(d, &a_ctx->ts[a_ctx->hlgt]);
   DIALOG_draw(d);
   UI_WINDOW_refresh(win);
@@ -151,6 +154,7 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
         _DIALOG_active_textbox_cycle(d);
         break;
       case '\n': // Should go into "NORMAL" mode. 
+        _DIALOG_textbox_enter(d);
         break;
     }
     //TODO: Add / update the task
@@ -167,11 +171,6 @@ void _DIALOG_active_textbox_cycle(DIALOG_s *d){
   d->active_tb_idx++;
   d->active_tb_idx%=5;
 
-  TEXTBOX_s* tb;
-  for(int i=0; i<5; i++){
-    tb = d->tb_pl[i];
-    tb ->state = i==d->active_tb_idx?TEXTBOX_STATE_HIGHLIGHT:TEXTBOX_STATE_DEFAULT;
-  }
 }
 
 void _DIALOG_content_set(DIALOG_s* d, task_s* t){
@@ -185,4 +184,27 @@ void _DIALOG_content_set(DIALOG_s* d, task_s* t){
   struct tm* ts = localtime(&t->start);
   strftime(buff, sizeof(buff), "%d/%m/%Y", ts);
   strcpy(d->start_tb->text, buff);
+}
+
+void _DIALOG_active_textbox_attr_update(DIALOG_s *d){
+  TEXTBOX_s* tb;
+  for(int i=0; i<5; i++){
+    tb = d->tb_pl[i];
+    tb->state = i==d->active_tb_idx?TEXTBOX_STATE_HIGHLIGHT:TEXTBOX_STATE_DEFAULT;
+  }
+}
+
+void _DIALOG_textbox_enter(DIALOG_s* d){
+  const int NORMAL_MODE = 1;
+  const int INSERT_MODE = 2; 
+  int ch; 
+  d->tb_pl[d->active_tb_idx]->state = TEXTBOX_STATE_ENTER;
+  DIALOG_draw(d);
+  UI_WINDOW_refresh(d->win);
+  while((ch = wgetch(d->win->win) != 27)){
+
+  } 
+  d->tb_pl[d->active_tb_idx]->state = TEXTBOX_STATE_HIGHLIGHT;
+  DIALOG_draw(d);
+  UI_WINDOW_refresh(d->win);
 }
