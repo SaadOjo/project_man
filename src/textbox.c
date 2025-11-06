@@ -63,5 +63,9 @@ void TEXTBOX_draw(TEXTBOX_s* tb, UI_WINDOW_s* win){
   mvwaddstr(n_win, y, x + 2, label);
   wattroff(n_win, label_attr);
 
+  // TODO: Remove with better more efficient solution.
+  for (int i = 0; i < width - 2; i++){
+    mvwaddstr(n_win, y + 1, x + 1 + i, " ");
+  }
   mvwaddstr(n_win, y + 1, x + 1, text);
 }

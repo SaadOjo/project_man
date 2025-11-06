@@ -48,33 +48,33 @@ void DIALOG_alloc(DIALOG_s* d){
   tb.x = x;
   tb.y = 2;
   TEXTBOX_alloc(&tb);
-  strcpy(tb.label, "Task");
+  strcpy(tb.label, "[T]ask");
   d->task_tb = malloc(sizeof(TEXTBOX_s));
   memcpy(d->task_tb, &tb, sizeof(TEXTBOX_s));
 
   tb.width = d->win->w/2 - 2*x;
   tb.y+=3;
   TEXTBOX_alloc(&tb);
-  strcpy(tb.label, "Duration");
+  strcpy(tb.label, "[D]uration");
   d->duration_tb = malloc(sizeof(TEXTBOX_s));
   memcpy(d->duration_tb, &tb, sizeof(TEXTBOX_s));
 
   tb.x+=(d->win->w/2);
   TEXTBOX_alloc(&tb);
-  strcpy(tb.label, "Start");
+  strcpy(tb.label, "[S]tart");
   d->start_tb = malloc(sizeof(TEXTBOX_s));
   memcpy(d->start_tb, &tb, sizeof(TEXTBOX_s));
 
   tb.y+=3;
   tb.x = x;
   TEXTBOX_alloc(&tb);
-  strcpy(tb.label, "End");
+  strcpy(tb.label, "[E]nd");
   d->end_tb = malloc(sizeof(TEXTBOX_s));
   memcpy(d->end_tb, &tb, sizeof(TEXTBOX_s));
 
   tb.x+=(d->win->w/2);
   TEXTBOX_alloc(&tb);
-  strcpy(tb.label, "Depends");
+  strcpy(tb.label, "De[p]ends");
   d->depends_tb = malloc(sizeof(TEXTBOX_s));
   memcpy(d->depends_tb, &tb, sizeof(TEXTBOX_s));
 
@@ -158,7 +158,25 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
   int c;
   while((c = wgetch(n_win)) != 27){
     switch(c){
-      case 'j':
+      case 't': // Task
+        d->active_tb_idx = 0;
+        _DIALOG_textbox_enter(d);
+        break;
+      case 'd': // Duration
+        d->active_tb_idx = 1;
+        _DIALOG_textbox_enter(d);
+        break;
+      case 's': // Start
+        d->active_tb_idx = 2;
+        _DIALOG_textbox_enter(d);
+        break;
+      case 'e': // End
+        d->active_tb_idx = 3;
+        _DIALOG_textbox_enter(d);
+        break;
+      case 'p': // Depends
+        d->active_tb_idx = 4;
+        _DIALOG_textbox_enter(d);
         break;
       case '\t':
         _DIALOG_active_textbox_cycle(d);
@@ -231,12 +249,19 @@ void _DIALOG_textbox_enter(DIALOG_s* d){
 
   //Normal mode init
 
+  int suffix_len;
   while(running){
     ch = wgetch(d->win->win);
     if(mode == NORMAL_MODE){
       switch(ch){
         case 27:
           running = false;
+          break;
+        case 'a':
+          mode = INSERT_MODE;
+          cur_idx++;
+          printf("\033[6 q");
+          fflush(stdout);
           break;
         case 'i':
           mode = INSERT_MODE;
@@ -257,9 +282,17 @@ void _DIALOG_textbox_enter(DIALOG_s* d){
           printf("\033[0 q");
           fflush(stdout);
           break;
+        case 127:
+          if(cur_idx == 0){
+            break;
+          }
+          suffix_len = strlen(active_tb->text+cur_idx);
+          memmove(active_tb->text+cur_idx - 1, active_tb->text+cur_idx, suffix_len + 1);
+          cur_idx--;
+          break;
         default:
-          strcpy(active_tb->text+cur_idx+1, active_tb->text+cur_idx);
-          //strcpy not safe for overlapping region. Use memmove instead.
+          suffix_len = strlen(active_tb->text+cur_idx);
+          memmove(active_tb->text+cur_idx+1, active_tb->text+cur_idx, suffix_len + 1);
           active_tb->text[cur_idx] = ch;
           cur_idx++;
           break;
