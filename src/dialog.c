@@ -274,11 +274,24 @@ void _DIALOG_textbox_enter(DIALOG_s* d){
         case 'h':
           cur_idx = vim_h(active_tb->text, cur_idx);
           break;
+        case 'b':
+          cur_idx = vim_b(active_tb->text, cur_idx);
+          break;
+        case 'w':
+          cur_idx = vim_w(active_tb->text, cur_idx);
+          break;
+        case 'e':
+          cur_idx = vim_e(active_tb->text, cur_idx);
+          break;
       }
     } else if(mode == INSERT_MODE){
       switch(ch){
         case 27:
           mode = NORMAL_MODE;
+          cur_idx--;
+          if (cur_idx < 0){
+            cur_idx = 0;
+          }
           printf("\033[0 q");
           fflush(stdout);
           break;
