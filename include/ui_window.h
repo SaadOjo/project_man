@@ -16,5 +16,6 @@ void UI_WINDOW_alloc(UI_WINDOW_s* w);
 void UI_WINDOW_del(UI_WINDOW_s* w);
 
 void UI_WINDOW_center_addstr(UI_WINDOW_s* w, char* m);
+void UI_WINDOW_clear(UI_WINDOW_s* w); 
 void UI_WINDOW_refresh(UI_WINDOW_s* w); 
 

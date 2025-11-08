@@ -42,12 +42,21 @@ void UTILS_navigate(app_context_s* a, int ch){
       break;
     case '\n':
       // Add check if table is empty, in that case present an error message
+      if(TASKS_len(a->ts) == 0){
+        break;
+      }
       d->type = DIALOG_TYPE_MODIFY;
       DIALOG_show(d, a);
       break;
     case 'a': // Add
       d->type = DIALOG_TYPE_ADD;
       DIALOG_show(d, a);
+      break;
+    case 'd': // Add
+      if(TASKS_len(a->ts) == 0){
+        break;
+      }
+      TASKS_remove(a->ts, a->hlgt);
       break;
   }
   
@@ -57,6 +66,7 @@ void UTILS_navigate(app_context_s* a, int ch){
 
 void UTILS_render_tasks(app_context_s* a_ctx){
   UI_WINDOW_s* w = a_ctx->m_w;
+  UI_WINDOW_clear(w);
   TASKS_sl ts = a_ctx->ts;
   int hlgt = a_ctx->hlgt; 
 

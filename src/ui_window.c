@@ -32,3 +32,7 @@ void UI_WINDOW_center_addstr(UI_WINDOW_s* w, char* m){
 void UI_WINDOW_refresh(UI_WINDOW_s* w){
   wrefresh(w->win);
 }
+void UI_WINDOW_clear(UI_WINDOW_s *w){
+  wclear(w->win);
+  box(w->win, 0, 0);
+}

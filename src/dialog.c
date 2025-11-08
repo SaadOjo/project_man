@@ -191,11 +191,20 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
     UI_WINDOW_refresh(win);
   }
 
-  if(d->type == DIALOG_TYPE_ADD){
-    time_t start = 0;
-    double duration = 0;
-    int idx = (TASKS_len(a_ctx->ts)==0)?0:a_ctx->hlgt+1;
-    TASKS_add(a_ctx->ts, idx, d->task_tb->text, start, duration);
+  time_t start = 0;
+  double duration = 0;
+  int idx;
+
+  switch(d->type){
+    case DIALOG_TYPE_NULL:
+      break; // Unexpected case
+    case DIALOG_TYPE_ADD:
+      idx = (TASKS_len(a_ctx->ts)==0)?0:a_ctx->hlgt+1;
+      TASKS_add(a_ctx->ts, idx, d->task_tb->text, start, duration);
+      break;
+    case DIALOG_TYPE_MODIFY:
+      TASKS_modify(a_ctx->ts, a_ctx->hlgt, d->task_tb->text, start, duration);
+      break;
   }
 
   wclear(n_win); 
