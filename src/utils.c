@@ -35,13 +35,13 @@ void UTILS_navigate(app_context_s* a, int ch){
   }
   switch(ch){
     case 'j':
-      if(a->hlgt == 0){
+      if(max_rows == 0){
         break;
       }
       a->hlgt = (++a->hlgt)%max_rows;
       break;
     case 'k':
-      if(a->hlgt == 0){
+      if(max_rows == 0){
         break;
       }
       a->hlgt = (a->hlgt+=(max_rows - 1))%max_rows;
