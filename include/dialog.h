@@ -12,8 +12,8 @@ typedef enum{
 typedef struct DIALOG_s {
   UI_WINDOW_s* win;
   TEXTBOX_s* task_tb;
-  TEXTBOX_s* duration_tb;
   TEXTBOX_s* start_tb;
+  TEXTBOX_s* duration_tb;
   TEXTBOX_s* end_tb;
   TEXTBOX_s* depends_tb;
   TEXTBOX_s**  tb_pl;

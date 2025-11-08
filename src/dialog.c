@@ -11,8 +11,8 @@ DIALOG_s  DIALOG_make(){
   s.win = NULL;
 
   s.task_tb = NULL;
-  s.duration_tb = NULL;
   s.start_tb = NULL;
+  s.duration_tb = NULL;
   s.end_tb = NULL;
   s.depends_tb = NULL;
   s.tb_pl = NULL; 
@@ -55,15 +55,15 @@ void DIALOG_alloc(DIALOG_s* d){
   tb.width = d->win->w/2 - 2*x;
   tb.y+=3;
   TEXTBOX_alloc(&tb);
-  strcpy(tb.label, "[D]uration (Days)");
-  d->duration_tb = malloc(sizeof(TEXTBOX_s));
-  memcpy(d->duration_tb, &tb, sizeof(TEXTBOX_s));
-
-  tb.x+=(d->win->w/2);
-  TEXTBOX_alloc(&tb);
   strcpy(tb.label, "[S]tart");
   d->start_tb = malloc(sizeof(TEXTBOX_s));
   memcpy(d->start_tb, &tb, sizeof(TEXTBOX_s));
+
+  tb.x+=(d->win->w/2);
+  TEXTBOX_alloc(&tb);
+  strcpy(tb.label, "[D]uration (Days)");
+  d->duration_tb = malloc(sizeof(TEXTBOX_s));
+  memcpy(d->duration_tb, &tb, sizeof(TEXTBOX_s));
 
   tb.y+=3;
   tb.x = x;
@@ -80,8 +80,8 @@ void DIALOG_alloc(DIALOG_s* d){
 
   d->tb_pl = malloc(sizeof(*d->tb_pl)*5);
   d->tb_pl[0] = d->task_tb;
-  d->tb_pl[1] = d->duration_tb;
-  d->tb_pl[2] = d->start_tb;
+  d->tb_pl[1] = d->start_tb;
+  d->tb_pl[2] = d->duration_tb;
   d->tb_pl[3] = d->end_tb;
   d->tb_pl[4] = d->depends_tb;
 }
@@ -93,11 +93,11 @@ void DIALOG_del(DIALOG_s* d){
   TEXTBOX_del(d->task_tb);
   free(d->task_tb);
 
-  TEXTBOX_del(d->duration_tb);
-  free(d->duration_tb);
-
   TEXTBOX_del(d->start_tb);
   free(d->start_tb);
+
+  TEXTBOX_del(d->duration_tb);
+  free(d->duration_tb);
 
   TEXTBOX_del(d->end_tb);
   free(d->end_tb);
@@ -129,8 +129,8 @@ void DIALOG_draw(DIALOG_s* d){
   
   _DIALOG_active_textbox_attr_update(d);
   TEXTBOX_draw(d->task_tb, d->win);  
-  TEXTBOX_draw(d->duration_tb, d->win);  
   TEXTBOX_draw(d->start_tb, d->win);  
+  TEXTBOX_draw(d->duration_tb, d->win);  
   TEXTBOX_draw(d->end_tb, d->win);  
   TEXTBOX_draw(d->depends_tb, d->win);  
 }
@@ -162,11 +162,11 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
         d->active_tb_idx = 0;
         _DIALOG_textbox_enter(d);
         break;
-      case 'd': // Duration
+      case 's': // Start
         d->active_tb_idx = 1;
         _DIALOG_textbox_enter(d);
         break;
-      case 's': // Start
+      case 'd': // Duration
         d->active_tb_idx = 2;
         _DIALOG_textbox_enter(d);
         break;
@@ -207,7 +207,7 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
       break;
   }
 
-  wclear(n_win); 
+  UI_WINDOW_clear(win);
   UI_WINDOW_refresh(win);
 }
 
@@ -221,21 +221,21 @@ void _DIALOG_content_set(DIALOG_s* d, task_s* t){
   char buff[1024];
   strcpy(d->task_tb->text, t->name);
  
-  int dur = (int)t->duration/86400.0;
-  sprintf(buff, "%d", dur);
-  strcpy(d->duration_tb->text, buff);
-
   struct tm* ts = localtime(&t->start);
   strftime(buff, sizeof(buff), "%d/%m/%Y", ts);
   strcpy(d->start_tb->text, buff);
+
+  int dur = (int)t->duration/86400.0;
+  sprintf(buff, "%d", dur);
+  strcpy(d->duration_tb->text, buff);
 }
 
 void _DIALOG_content_clear(DIALOG_s* d){
   d->task_tb->text[0] = '\0';
-  d->duration_tb->text[0] = '\0';
   d->start_tb->text[0] = '\0';
-  d->end_tb->text[0] = '\0';
   d->duration_tb->text[0] = '\0';
+  d->end_tb->text[0] = '\0';
+  d->depends_tb->text[0] = '\0';
 }
 
 void _DIALOG_active_textbox_attr_update(DIALOG_s *d){
@@ -319,7 +319,7 @@ void _DIALOG_textbox_enter(DIALOG_s* d){
           memmove(active_tb->text+cur_idx - 1, active_tb->text+cur_idx, suffix_len + 1);
           cur_idx--;
           break;
-        default:
+        default: // Entering text
           suffix_len = strlen(active_tb->text+cur_idx);
           memmove(active_tb->text+cur_idx+1, active_tb->text+cur_idx, suffix_len + 1);
           active_tb->text[cur_idx] = ch;
