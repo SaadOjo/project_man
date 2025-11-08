@@ -55,7 +55,7 @@ void DIALOG_alloc(DIALOG_s* d){
   tb.width = d->win->w/2 - 2*x;
   tb.y+=3;
   TEXTBOX_alloc(&tb);
-  strcpy(tb.label, "[D]uration");
+  strcpy(tb.label, "[D]uration (Days)");
   d->duration_tb = malloc(sizeof(TEXTBOX_s));
   memcpy(d->duration_tb, &tb, sizeof(TEXTBOX_s));
 
@@ -116,7 +116,7 @@ void DIALOG_draw(DIALOG_s* d){
 
   switch(d->type){
     case DIALOG_TYPE_ADD:
-      title = "INSERT TASK";
+      title = "ADD TASK";
       break;
     case DIALOG_TYPE_MODIFY:
       title = "MODIFY TASK";
@@ -189,6 +189,13 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
     // Take information from buffer and do something about it
     DIALOG_draw(d);
     UI_WINDOW_refresh(win);
+  }
+
+  if(d->type == DIALOG_TYPE_ADD){
+    time_t start = 0;
+    double duration = 0;
+    int idx = (TASKS_len(a_ctx->ts)==0)?0:a_ctx->hlgt+1;
+    TASKS_add(a_ctx->ts, idx, d->task_tb->text, start, duration);
   }
 
   wclear(n_win); 

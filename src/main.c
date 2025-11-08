@@ -31,17 +31,6 @@ int main(void){
   a_ctx.m_w = &m_w;
   a_ctx.ts = ts;
 
-  TASKS_add(ts, "Persons have done", 0, 0);
-  TASKS_add(ts, "Sign Supply Chain Agreement", 0, 0);
-  TASKS_add(ts, "Prepare Logistics Agreement Draft", 0, 0);
-  TASKS_add(ts, "Review EVT Device", 0, 0);
-  TASKS_add(ts, "Review DVT Device", 0, 0);
-  TASKS_add(ts, "Revise Project Budget", 0, 0);
-  TASKS_add(ts, "Prepare Project Book", 0, 0);
-  TASKS_add(ts, "Prepare Project Book", 0, 0);
-  TASKS_add(ts, "Prepare Project Book", 0, 0);
-  TASKS_add(ts, "Prepare Project Book", 0, 0);
-
   UTILS_render_tasks(&a_ctx);
   UI_WINDOW_refresh(&m_w);
 
@@ -59,6 +48,7 @@ int main(void){
   UI_WINDOW_del(&m_w);
   DIALOG_del(&d);
   endwin();
+ // TASKS_del(ts);
   return 0;
 }
 
