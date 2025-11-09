@@ -39,4 +39,5 @@ void      _DIALOG_active_textbox_cycle(DIALOG_s *d);
 void      _DIALOG_content_set(DIALOG_s* d, task_s* t);
 void      _DIALOG_content_clear(DIALOG_s* d);
 void      _DIALOG_active_textbox_attr_update(DIALOG_s *d);
-void      _DIALOG_textbox_enter(DIALOG_s* d);
+void      _DIALOG_textbox_enter(DIALOG_s* d, app_context_s* a_ctx);
+void      _DIALOG_recalculate(DIALOG_s* d, app_context_s* a_ctx);

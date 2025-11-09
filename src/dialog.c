@@ -161,29 +161,29 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
     switch(c){
       case 't': // Task
         d->active_tb = DIALOG_TEXTBOX_TASK;
-        _DIALOG_textbox_enter(d);
+        _DIALOG_textbox_enter(d, a_ctx);
         break;
       case 's': // Start
         d->active_tb = DIALOG_TEXTBOX_START;
-        _DIALOG_textbox_enter(d);
+        _DIALOG_textbox_enter(d, a_ctx);
         break;
       case 'd': // Duration
         d->active_tb = DIALOG_TEXTBOX_DURATION;
-        _DIALOG_textbox_enter(d);
+        _DIALOG_textbox_enter(d, a_ctx);
         break;
       case 'e': // End
         d->active_tb = DIALOG_TEXTBOX_END;
-        _DIALOG_textbox_enter(d);
+        _DIALOG_textbox_enter(d, a_ctx);
         break;
       case 'p': // Depends
         d->active_tb = DIALOG_TEXTBOX_DEPENDS;
-        _DIALOG_textbox_enter(d);
+        _DIALOG_textbox_enter(d, a_ctx);
         break;
       case '\t':
         _DIALOG_active_textbox_cycle(d);
         break;
       case '\n': // Should go into "ENTER" mode. 
-        _DIALOG_textbox_enter(d);
+        _DIALOG_textbox_enter(d, a_ctx);
         break;
     }
     //TODO: Add / update the task
@@ -261,7 +261,7 @@ void _DIALOG_active_textbox_attr_update(DIALOG_s *d){
   }
 }
 
-void _DIALOG_textbox_enter(DIALOG_s* d){
+void _DIALOG_textbox_enter(DIALOG_s* d, app_context_s* a_ctx){
   const int NORMAL_MODE = 1;
   const int INSERT_MODE = 2; 
   int mode = NORMAL_MODE;
@@ -345,27 +345,71 @@ void _DIALOG_textbox_enter(DIALOG_s* d){
   } 
   // TODO: Validate the text entry
   // TODO: Validate update the other fields accordingly
-  time_t start;
-  time_t end;
-
-  if(d->active_tb == DIALOG_TEXTBOX_END){
-    // Makesure that it must be after the start date
-    // Update the duration accordingly
-  }else if(d->active_tb == DIALOG_TEXTBOX_DURATION){
-    // Update the end date accordingly 
-    // TODO: Need to check if the dialog is actually empty
-    start = UTILS_time_parse(d->start_tb->text);
-    end = start + UTILS_duration_parse(d->duration_tb->text); 
-     
-    struct tm* ts = localtime(&end);
-    char* end_str = d->end_tb->text;
-    strftime(end_str, sizeof(end_str), "%d/%m/%y", ts);
-  }else if(d->active_tb == DIALOG_TEXTBOX_DEPENDS){
-    // TODO: Update the stard dates accordingly
-  }
+  _DIALOG_recalculate(d, a_ctx);
 
   d->tb_pl[d->active_tb]->state = TEXTBOX_STATE_HIGHLIGHT;
   curs_set(0);
   DIALOG_draw(d);
   UI_WINDOW_refresh(d->win);
+}
+
+void _DIALOG_recalculate(DIALOG_s* d, app_context_s* a_ctx){
+  struct tm* tm_ptr;
+  time_t start;
+  time_t end;
+  double dur;
+  char* str_ptr;
+
+  switch(d->active_tb){
+    case DIALOG_TEXTBOX_TASK:
+      break;
+    case DIALOG_TEXTBOX_START:
+      // This should already have been validated at this point
+      if(strlen(d->start_tb->text) == 0){
+        break;
+      }
+      if(strlen(d->duration_tb->text) == 0){
+        break;
+      }
+      start = UTILS_time_parse(d->start_tb->text);
+      end = start + UTILS_duration_parse(d->duration_tb->text); 
+      tm_ptr = localtime(&end);
+      str_ptr = d->end_tb->text;
+      strftime(str_ptr, sizeof(str_ptr), "%d/%m/%y", tm_ptr);
+      break;
+    case DIALOG_TEXTBOX_DURATION:
+      // Replace with validation
+      if(strlen(d->duration_tb->text) == 0){
+        break;
+      }
+      if(strlen(d->start_tb->text) == 0){
+        break;
+      }
+      start = UTILS_time_parse(d->start_tb->text);
+      end = start + UTILS_duration_parse(d->duration_tb->text); 
+      tm_ptr = localtime(&end);
+      str_ptr = d->end_tb->text;
+      strftime(str_ptr, sizeof(str_ptr), "%d/%m/%y", tm_ptr);
+      break;
+    case DIALOG_TEXTBOX_END:
+      // Replace with validation
+      if(strlen(d->end_tb->text) == 0){
+        break;
+      }
+      if(strlen(d->start_tb->text) == 0 || strlen(d->duration_tb->text) == 0){
+        return;
+      }
+      start = UTILS_time_parse(d->start_tb->text);
+      end = UTILS_time_parse(d->end_tb->text);
+      dur = difftime(end, start);
+      if(dur < 0){
+        strcpy(d->end_tb->text, d->start_tb->text);
+        dur = 0.0;
+      }
+      sprintf(d->duration_tb->text, "%d", (int)dur/(24*60*60));
+      break;
+    case DIALOG_TEXTBOX_DEPENDS:
+      // Add dependency updates
+      break;
+  }
 }
