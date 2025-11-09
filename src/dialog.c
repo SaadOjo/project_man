@@ -4,6 +4,7 @@
 #include <time.h>
 
 #include "dialog.h"
+#include "utils.h"
 #include "vim_motions.h"
 
 DIALOG_s  DIALOG_make(){
@@ -16,7 +17,7 @@ DIALOG_s  DIALOG_make(){
   s.end_tb = NULL;
   s.depends_tb = NULL;
   s.tb_pl = NULL; 
-  s.active_tb_idx = 0;
+  s.active_tb = 0;
 
   s.type = DIALOG_TYPE_NULL;
 
@@ -141,7 +142,7 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
   UI_WINDOW_s* win = d->win;
   WINDOW* n_win = win->win;
 
-  d->active_tb_idx = 0;
+  d->active_tb = 0;
   switch(d->type){
     case DIALOG_TYPE_NULL:
       break; // Unexpected case
@@ -159,23 +160,23 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
   while((c = wgetch(n_win)) != 27){
     switch(c){
       case 't': // Task
-        d->active_tb_idx = 0;
+        d->active_tb = DIALOG_TEXTBOX_TASK;
         _DIALOG_textbox_enter(d);
         break;
       case 's': // Start
-        d->active_tb_idx = 1;
+        d->active_tb = DIALOG_TEXTBOX_START;
         _DIALOG_textbox_enter(d);
         break;
       case 'd': // Duration
-        d->active_tb_idx = 2;
+        d->active_tb = DIALOG_TEXTBOX_DURATION;
         _DIALOG_textbox_enter(d);
         break;
       case 'e': // End
-        d->active_tb_idx = 3;
+        d->active_tb = DIALOG_TEXTBOX_END;
         _DIALOG_textbox_enter(d);
         break;
       case 'p': // Depends
-        d->active_tb_idx = 4;
+        d->active_tb = DIALOG_TEXTBOX_DEPENDS;
         _DIALOG_textbox_enter(d);
         break;
       case '\t':
@@ -190,9 +191,11 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
     DIALOG_draw(d);
     UI_WINDOW_refresh(win);
   }
-
-  time_t start = 0;
-  double duration = 0;
+  
+  // TODO: Eventually there should be an explicit save option
+  time_t start = UTILS_time_parse(d->start_tb->text);
+  double duration = UTILS_duration_parse(d->duration_tb->text);
+  time_t end = UTILS_time_parse(d->end_tb->text);
   int idx;
 
   switch(d->type){
@@ -200,10 +203,10 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
       break; // Unexpected case
     case DIALOG_TYPE_ADD:
       idx = (TASKS_len(a_ctx->ts)==0)?0:a_ctx->hlgt+1;
-      TASKS_add(a_ctx->ts, idx, d->task_tb->text, start, duration);
+      TASKS_add(a_ctx->ts, idx, d->task_tb->text, start, duration, end);
       break;
     case DIALOG_TYPE_MODIFY:
-      TASKS_modify(a_ctx->ts, a_ctx->hlgt, d->task_tb->text, start, duration);
+      TASKS_modify(a_ctx->ts, a_ctx->hlgt, d->task_tb->text, start, duration, end);
       break;
   }
 
@@ -212,22 +215,31 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
 }
 
 void _DIALOG_active_textbox_cycle(DIALOG_s *d){
-  d->active_tb_idx++;
-  d->active_tb_idx%=5;
+  d->active_tb++;
+  d->active_tb%=5;
 
 }
 
 void _DIALOG_content_set(DIALOG_s* d, task_s* t){
+  _DIALOG_content_clear(d);
+  struct tm* ts;
   char buff[1024];
+  // Task name
   strcpy(d->task_tb->text, t->name);
- 
-  struct tm* ts = localtime(&t->start);
-  strftime(buff, sizeof(buff), "%d/%m/%Y", ts);
+  // Start 
+  ts = localtime(&t->start);
+  strftime(buff, sizeof(buff), "%d/%m/%y", ts);
   strcpy(d->start_tb->text, buff);
-
+  // Duration
   int dur = (int)t->duration/86400.0;
   sprintf(buff, "%d", dur);
   strcpy(d->duration_tb->text, buff);
+  // End 
+  ts = localtime(&t->end);
+  strftime(buff, sizeof(buff), "%d/%m/%y", ts);
+  strcpy(d->end_tb->text, buff);
+  // Depends
+  strcpy(d->depends_tb->text, "HC");
 }
 
 void _DIALOG_content_clear(DIALOG_s* d){
@@ -245,7 +257,7 @@ void _DIALOG_active_textbox_attr_update(DIALOG_s *d){
     if(tb->state == TEXTBOX_STATE_ENTER){
       continue;
     }
-    tb->state = i==d->active_tb_idx?TEXTBOX_STATE_HIGHLIGHT:TEXTBOX_STATE_DEFAULT;
+    tb->state = i==d->active_tb?TEXTBOX_STATE_HIGHLIGHT:TEXTBOX_STATE_DEFAULT;
   }
 }
 
@@ -256,7 +268,7 @@ void _DIALOG_textbox_enter(DIALOG_s* d){
   int cur_idx = 0;
   bool running = true;
   int ch; 
-  TEXTBOX_s* active_tb = d->tb_pl[d->active_tb_idx];
+  TEXTBOX_s* active_tb = d->tb_pl[d->active_tb];
   active_tb->state = TEXTBOX_STATE_ENTER;
   curs_set(1);
   DIALOG_draw(d);
@@ -331,7 +343,28 @@ void _DIALOG_textbox_enter(DIALOG_s* d){
     wmove(d->win->win, active_tb->y+1, active_tb->x+1+cur_idx);
     UI_WINDOW_refresh(d->win);
   } 
-  d->tb_pl[d->active_tb_idx]->state = TEXTBOX_STATE_HIGHLIGHT;
+  // TODO: Validate the text entry
+  // TODO: Validate update the other fields accordingly
+  time_t start;
+  time_t end;
+
+  if(d->active_tb == DIALOG_TEXTBOX_END){
+    // Makesure that it must be after the start date
+    // Update the duration accordingly
+  }else if(d->active_tb == DIALOG_TEXTBOX_DURATION){
+    // Update the end date accordingly 
+    // TODO: Need to check if the dialog is actually empty
+    start = UTILS_time_parse(d->start_tb->text);
+    end = start + UTILS_duration_parse(d->duration_tb->text); 
+     
+    struct tm* ts = localtime(&end);
+    char* end_str = d->end_tb->text;
+    strftime(end_str, sizeof(end_str), "%d/%m/%y", ts);
+  }else if(d->active_tb == DIALOG_TEXTBOX_DEPENDS){
+    // TODO: Update the stard dates accordingly
+  }
+
+  d->tb_pl[d->active_tb]->state = TEXTBOX_STATE_HIGHLIGHT;
   curs_set(0);
   DIALOG_draw(d);
   UI_WINDOW_refresh(d->win);

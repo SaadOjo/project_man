@@ -1,5 +1,6 @@
 #include "tasks.h"
 #include <string.h>
+#include <time.h>
 
 TASKS_sl TASKS_make(){
   TASKS_sl ts = calloc(TASKS_MAX, sizeof(TASKS_sl)); 
@@ -17,7 +18,7 @@ void TASKS_del(TASKS_sl ts){
  free(ts);
 }
 
-void TASKS_add(TASKS_sl ts, int idx, char* name, time_t start, double duration){
+void TASKS_add(TASKS_sl ts, int idx, char* name, time_t start, double duration, time_t end){
   int num_tasks = TASKS_len(ts);
 
   if(num_tasks == TASKS_MAX){
@@ -29,11 +30,11 @@ void TASKS_add(TASKS_sl ts, int idx, char* name, time_t start, double duration){
   }
 
   memmove(ts+idx+1, ts+idx, sizeof(task_s)*(num_tasks-idx+1));
-  ts[idx].id = idx; 
   ts[idx].name = malloc(strlen(name) + 1);
   strcpy(ts[idx].name, name);
   ts[idx].start = start;
   ts[idx].duration = duration;
+  ts[idx].end = end;
 }
 
 int TASKS_len(TASKS_sl ts){
@@ -48,12 +49,13 @@ int TASKS_len(TASKS_sl ts){
   }
   return 0;
 }
-void TASKS_modify(TASKS_sl ts, int idx, char* name, time_t start, double duration){
-  ts[idx].id = idx; 
+void TASKS_modify(TASKS_sl ts, int idx, char* name, time_t start, double duration, time_t end){
   strcpy(ts[idx].name, name);
   ts[idx].start = start;
   ts[idx].duration = duration;
+  ts[idx].end = end;
 }
+
 void TASKS_remove(TASKS_sl ts, int idx){
   int num_tasks = TASKS_len(ts);
   if(num_tasks == 0){

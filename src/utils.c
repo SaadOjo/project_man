@@ -1,3 +1,6 @@
+#include <time.h>
+#include <stdlib.h>
+
 #include "utils.h"
 #include "dialog.h"
 #include "ui_window.h"
@@ -63,6 +66,10 @@ void UTILS_navigate(app_context_s* a, int ch){
         break;
       }
       TASKS_remove(a->ts, a->hlgt);
+      ts_len = TASKS_len(a->ts);
+      if(ts_len != 0 && a->hlgt >= ts_len){
+        a->hlgt = ts_len - 1; 
+      }
       break;
   }
   
@@ -95,26 +102,51 @@ void UTILS_render_tasks(app_context_s* a_ctx){
   for(int i=0; i<w->h; i++){
     task_s t = ts[i];
 
-    int id = t.id; 
-    char* name = t.name;
+    char* name;
     char start_str[1024];
-    int dur = (int)t.duration/86400.0;
-    char* dep_str = "0";
-    struct tm* ts = localtime(&t.start);
-    strftime(start_str, sizeof(start_str), "%d/%m/%Y", ts);
+    char end_str[1024];
+    int dur;
+    char* dep_str;
 
+    // Task name
+    name = t.name;
+
+    //Task start
+    struct tm* ts = localtime(&t.start);
+    strftime(start_str, sizeof(start_str), "%d/%m/%y", ts);
+
+    // Task duration
+    dur = (int)t.duration/86400.0;
+
+    // Task end
+    ts = localtime(&t.end);
+    strftime(end_str, sizeof(end_str), "%d/%m/%y", ts);
+
+    // Task depends
+    dep_str = "HC";
+   // TODO: Do real implementation 
     if(name == NULL){
       break;  
     }
     attr_t attr = i==hlgt ? A_UNDERLINE | A_BOLD | A_REVERSE : A_NORMAL; 
     wattron(w->win, attr);
     mvwprintw(w->win, i+2, 1, "%-*d%-*s%-*d%-*s%-*s%-*s",
-              col_w[0], id,
+              col_w[0], i,
               col_w[1], name,
               col_w[2], dur,
               col_w[3], start_str,
-              col_w[4], start_str,
+              col_w[4], end_str,
               col_w[5], dep_str);
     wattroff(w->win, attr);
   }
+}
+time_t UTILS_time_parse(char* time_str){
+  struct tm tm_time;
+  memset(&tm_time, 0, sizeof(struct tm));
+  strptime(time_str, "%d/%m/%y", &tm_time);
+  return mktime(&tm_time);
+}
+double UTILS_duration_parse(char* dur_str){
+  double dur_days = strtol(dur_str, NULL, 10);
+  return dur_days*24*60*60;
 }
