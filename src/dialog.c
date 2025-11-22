@@ -109,7 +109,7 @@ void DIALOG_del(DIALOG_s* d){
   free(d->tb_pl);
 }
 
-void DIALOG_draw(DIALOG_s* d){
+void _DIALOG_draw(DIALOG_s* d){
   UI_WINDOW_s* win = d->win;
   box(win->win, 0, 0);
 
@@ -153,7 +153,7 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
     _DIALOG_content_set(d, &a_ctx->ts[a_ctx->hlgt]);
     break;
   }
-  DIALOG_draw(d);
+  _DIALOG_draw(d);
   UI_WINDOW_refresh(win);
 
   int c;
@@ -188,7 +188,7 @@ void DIALOG_show(DIALOG_s *d, app_context_s* a_ctx){
     }
     //TODO: Add / update the task
     // Take information from buffer and do something about it
-    DIALOG_draw(d);
+    _DIALOG_draw(d);
     UI_WINDOW_refresh(win);
   }
   
@@ -271,7 +271,7 @@ void _DIALOG_textbox_enter(DIALOG_s* d, app_context_s* a_ctx){
   TEXTBOX_s* active_tb = d->tb_pl[d->active_tb];
   active_tb->state = TEXTBOX_STATE_ENTER;
   curs_set(1);
-  DIALOG_draw(d);
+  _DIALOG_draw(d);
   wmove(d->win->win, active_tb->y+1, active_tb->x+1);
   UI_WINDOW_refresh(d->win);
 
@@ -339,7 +339,7 @@ void _DIALOG_textbox_enter(DIALOG_s* d, app_context_s* a_ctx){
           break;
       }
     }
-    DIALOG_draw(d);
+    _DIALOG_draw(d);
     wmove(d->win->win, active_tb->y+1, active_tb->x+1+cur_idx);
     UI_WINDOW_refresh(d->win);
   } 
@@ -349,7 +349,7 @@ void _DIALOG_textbox_enter(DIALOG_s* d, app_context_s* a_ctx){
 
   d->tb_pl[d->active_tb]->state = TEXTBOX_STATE_HIGHLIGHT;
   curs_set(0);
-  DIALOG_draw(d);
+  _DIALOG_draw(d);
   UI_WINDOW_refresh(d->win);
 }
 

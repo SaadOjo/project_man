@@ -8,6 +8,7 @@
 #include "ui_window.h"
 #include "structs.h"
 #include "dialog.h"
+#include "statusbar.h"
 
 int main(void){
   // Header Window
@@ -23,7 +24,7 @@ int main(void){
 
   UI_WINDOW_s m_w = UI_WINDOW_make();
   m_w.w = COLS;
-  m_w.h = LINES - 3;
+  m_w.h = LINES - 6;
   m_w.s_y = 3;
   UI_WINDOW_alloc(&m_w); 
 
@@ -33,6 +34,12 @@ int main(void){
 
   UTILS_render_tasks(&a_ctx);
   UI_WINDOW_refresh(&m_w);
+
+  STATUSBAR_s sb = STATUSBAR_make();
+  STATUSBAR_alloc(&sb);
+  a_ctx.sb = &sb;
+
+  STATUSBAR_reflect(&sb);
 
   DIALOG_s d = DIALOG_make();
   DIALOG_alloc(&d);

@@ -32,9 +32,9 @@ typedef struct DIALOG_s {
 DIALOG_s  DIALOG_make();
 void      DIALOG_alloc(DIALOG_s* d);
 void      DIALOG_del(DIALOG_s* d);
-void      DIALOG_draw(DIALOG_s* d);
 void      DIALOG_show(DIALOG_s *d, app_context_s* a_ctx);
 // Private functions
+void      _DIALOG_draw(DIALOG_s* d);
 void      _DIALOG_active_textbox_cycle(DIALOG_s *d);
 void      _DIALOG_content_set(DIALOG_s* d, task_s* t);
 void      _DIALOG_content_clear(DIALOG_s* d);
